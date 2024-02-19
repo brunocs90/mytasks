@@ -2,6 +2,7 @@
 import { useGlobalState } from '@/app/context/globalProvider';
 import { logout } from '@/app/utils/Icons';
 import menu from '@/app/utils/menu';
+import { useAuth, useUser } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -12,9 +13,24 @@ function Sidebar() {
   const { theme } = useGlobalState();
   const router = useRouter();
   const pathname = usePathname();
+  const { user } = useUser();
+  const { signOut } = useAuth();
+
+  if (!user) {
+    return <div>Carregando...</div>;
+  }
+
+  const imageUrl = user.imageUrl;
+  const name = user.firstName;
+  const lastName = user.lastName;
 
   const handleClick = (link: string) => {
     router.push(link);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/signin');
   };
 
   return (
@@ -23,11 +39,11 @@ function Sidebar() {
         <div className='profile'>
           <div className='profile-overlay'></div>
           <div className='image'>
-            <Image width={70} height={70} src='/avatar1.png' alt='profile' />
+            <Image width={70} height={70} src={imageUrl} alt='profile' />
           </div>
           <h1 className='capitalize'>
-            <span>Sin</span>
-            <span>Rostro</span>
+            <span>{name}</span>
+            <span>{lastName}</span>
           </h1>
         </div>
         <ul className='nav-items'>
@@ -56,9 +72,7 @@ function Sidebar() {
             fw={'500'}
             fs={'1.2rem'}
             icon={logout}
-            // click={() => {
-            //   signOut(() => router.push('/signin'));
-            // }}
+            click={handleSignOut}
           />
         </div>
       </SidebarStyled>
